@@ -170,13 +170,26 @@
   }
 
   // ── 탭 정의 ───────────────────────────────────────────────
-  //   🙏 기도 탭은 기도 데이터가 있을 때만 (= 로컬 data.local.js 로드 시) 나타난다.
-  //   공개 사이트에는 기도 데이터가 없으므로 기도 탭이 보이지 않는다.
-  var hasPrayer = !!(DATA.prayer && DATA.prayer.people && DATA.prayer.people.length);
-  var TABS = [{ id: "main", label: "🏠 메인" }];
-  if (hasPrayer) TABS.push({ id: "prayer", label: "🙏 기도" });
-  TABS.push({ id: "gwanggo", label: "📋 광고" });
-  TABS.push({ id: "archive", label: "🗄️ 보관함" });
+  var TABS = [
+    { id: "main",    label: "🏠 메인" },
+    { id: "prayer",  label: "🙏 기도" },
+    { id: "gwanggo", label: "📋 광고" },
+    { id: "archive", label: "🗄️ 보관함" }
+  ];
+
+  // 🔒 사이트 전체 비밀번호 게이트 (가벼운 UI 잠금 — 강력한 보안은 아님).
+  //   비밀번호 원문은 코드에 없고, SHA-256 해시만 저장해 비교합니다.
+  //   한 기기에서 한 번 입력하면 계속 열린 상태로 유지됩니다(localStorage).
+  var SITE_PW_HASH = "625b8de2f2d06e9d674d60dffe3d09cbc59a50b2cb1c71d38be0b2bc80af5a27";
+  var SITE_UNLOCK_KEY = "win2_unlocked";
+  function siteUnlocked() {
+    try { return localStorage.getItem(SITE_UNLOCK_KEY) === "1"; } catch (e) { return false; }
+  }
+  function sha256hex(str) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function (buf) {
+      return [].map.call(new Uint8Array(buf), function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+    });
+  }
   var galleryBuilt = false;
 
   function setActive(tabId, updateHash) {
@@ -233,6 +246,39 @@
     });
     wrap.appendChild(grid);
     return wrap;
+  }
+
+  // 🔒 사이트 비밀번호 입력 화면 (전체 사이트 잠금)
+  function buildSiteLock(app) {
+    var screen = el("div", "site-lock");
+    var box = el("div", "lockbox");
+    box.appendChild(el("div", "lock-brand", "WIN2 공지 허브"));
+    box.appendChild(el("div", "lock-title", "🔒 비밀번호를 입력하세요"));
+    var form = document.createElement("form");
+    form.className = "lock-form";
+    var input = document.createElement("input");
+    input.type = "password"; input.className = "lock-input";
+    input.placeholder = "비밀번호"; input.autocomplete = "current-password";
+    input.setAttribute("aria-label", "비밀번호");
+    var btn = el("button", "lock-btn", "열기"); btn.type = "submit";
+    form.appendChild(input); form.appendChild(btn);
+    var err = el("div", "lock-err", "");
+    box.appendChild(form); box.appendChild(err);
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      sha256hex(input.value).then(function (h) {
+        if (h === SITE_PW_HASH) {
+          try { localStorage.setItem(SITE_UNLOCK_KEY, "1"); } catch (e2) {}
+          render();
+        } else {
+          err.textContent = "비밀번호가 올바르지 않습니다.";
+          input.value = ""; input.focus();
+        }
+      });
+    });
+    screen.appendChild(box);
+    app.appendChild(screen);
+    setTimeout(function () { try { input.focus(); } catch (e3) {} }, 50);
   }
 
   // ── 주일 광고 헤더 (날짜 + 선택적 슬라이드 링크) ──────────
@@ -331,6 +377,9 @@
     var app = document.getElementById("app");
     app.innerHTML = "";
 
+    // 🔒 비밀번호 잠금 — 열려 있지 않으면 잠금 화면만 보여주고 끝
+    if (!siteUnlocked()) { buildSiteLock(app); return; }
+
     var items = (DATA.items || []).slice();
     var live = items.filter(function (it) { return !isPast(it); });
     var past = items.filter(isPast).sort(byEndDesc);
@@ -373,7 +422,7 @@
     pMain.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
     pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다."));
 
-    // 🙏 기도 제목 (기도 탭이 있을 때만 = 로컬에서만)
+    // 🙏 기도 제목
     var pPr = document.getElementById("panel-prayer");
     if (pPr) {
       var nPray = (DATA.prayer && DATA.prayer.people ? DATA.prayer.people.length : 0);

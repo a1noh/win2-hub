@@ -173,6 +173,33 @@ body.no-scroll { overflow: hidden; }
 .cat-notice     { background: #3a2f12; color: #ffd98c; }
 .cat-reminder   { background: #33244a; color: #e0c2ff; }
 
+/* 🔒 비밀번호 잠금 화면 (사이트 전체) */
+.site-lock {
+  min-height: 86vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.lockbox {
+  width: 100%; max-width: 360px; margin: 0 auto; text-align: center;
+  background: var(--bg-elev); border: 1px solid var(--line-soft);
+  border-radius: var(--radius); padding: 28px 22px;
+}
+.lock-brand { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; margin-bottom: 14px; }
+.lock-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 16px; color: var(--text-dim); }
+.lock-form { display: flex; gap: 8px; }
+.lock-input {
+  flex: 1 1 auto; min-width: 0;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 10px 12px; font: inherit; font-size: 1rem;
+}
+.lock-input:focus { outline: none; border-color: var(--accent); }
+.lock-btn {
+  flex: 0 0 auto; background: var(--accent); color: #0b1020;
+  border: none; border-radius: var(--radius-sm); padding: 10px 16px;
+  font: inherit; font-weight: 700; cursor: pointer;
+}
+.lock-err { min-height: 1.2em; margin-top: 10px; font-size: 0.84rem; color: #ff9b9b; }
+
 /* 🙏 기도 제목 카드 */
 .pray-inner { padding: 14px; }
 .pray-name {
