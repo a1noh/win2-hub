@@ -9,7 +9,7 @@
    - items   : 날짜가 있는 모든 공지/일정 (아래 블록을 복사해서 추가)
 
    날짜 규칙 (America/New_York 기준으로 자동 계산):
-   - end 날짜가 오늘보다 지났거나 done:true 이면 → "지난 공지" 로 이동
+   - end 날짜가 오늘보다 지났거나 done:true 이면 → "보관함" 으로 이동
    - 나머지는 다가오는 일정에 가까운 순서로 표시
 
    item 한 개 복사용 템플릿:
@@ -17,12 +17,13 @@
      {
        id: "고유한-영문-아이디",         // 겹치지 않게
        category: "leadership",          // leadership | outing | notice | reminder
+                                        //  → 🏠 메인 피드에서 작은 칩으로 표시 (탭 구분 아님)
        title: "제목",
        start: "2026-10-16",             // 시작일 (필수)
        end: "2026-10-18",               // 종료일 (하루면 start 와 같게)
        summary: "한 줄 요약",
        people: ["이름1", "이름2"],       // 없으면 []
-       done: false,                     // true 로 하면 바로 "지난 공지" 로
+       done: false,                     // true 로 하면 바로 "보관함" 으로
        body: "## 소제목\n- 항목\n**굵게** 와 @이름 멘션 사용 가능"
      }
 
@@ -47,10 +48,18 @@ window.HUB_DATA = {
     slidesUrl: ""    // 구글 슬라이드 링크가 있으면 여기에 붙여넣기 ("" 면 버튼 숨김)
   },
 
-  // ── 주일 광고 슬라이드 사진 (🖼️ 사진 탭) ──────────────────
+  // ── 고정(핀) 정보 — 🏠 메인 맨 위에 항상 표시 ─────────────
+  //   날짜 없는 상시 정보용 (예: 셀 모임 시간, 자주 쓰는 링크).
+  //   비어 있으면 화면에 아무것도 안 나옵니다. 날짜 지나도 안 사라집니다.
+  //   추가 예시:
+  //     { title: "셀 모임", body: "매주 금요일 7:30pm · 5층\n자세히는 순장에게" },
+  pinned: [],
+
+  // ── 주일 광고 슬라이드 사진 (📋 광고 탭) ──────────────────
   //   caption = 광고 제목(번호 그대로). src = 큰 이미지, thumb = 작은 미리보기.
-  //   새 사진 추가: images/ 와 images/thumbs/ 에 파일을 넣고 아래 블록을 복사.
-  //   (압축 명령은 UPDATING.md 참고)
+  //   보통은 매주 새 구글 드라이브 폴더 링크를 Claude 에게 주면 자동 갱신됩니다.
+  //   직접 추가하려면: images/ 와 images/thumbs/ 에 파일을 넣고 아래 블록 복사.
+  //   (압축은 tools/compress_images.py — 자세히는 UPDATING.md)
   photos: [
     { caption: "0-0. Welcome",      src: "images/welcome.jpg",     thumb: "images/thumbs/welcome.jpg" },
     { caption: "0-1. 윈투 새가족",    src: "images/saegajok.jpg",    thumb: "images/thumbs/saegajok.jpg" },
@@ -125,7 +134,7 @@ window.HUB_DATA = {
       end: "2026-10-04",
       summary: "스튜디오 데이 성찬위원 역할·동선 안내",
       people: ["예은", "효준", "석헌", "민지", "예진", "두용"],
-      done: true,   // 이미 끝난 공지 → 지난 공지로
+      done: true,   // 이미 끝난 공지 → 보관함으로
       body:
         "스튜디오 데이 Overflow는 5층 → 8층 큰방 → 8층 작은방 → 6층 순으로 진행될 예정입니다. 당일 상황에 따라 변동 시 공지드릴게요!\n" +
         "\n" +

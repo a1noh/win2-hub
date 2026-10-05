@@ -162,6 +162,28 @@ body.no-scroll { overflow: hidden; }
 .card-body { display: none; padding: 2px 14px 16px; border-top: 1px solid var(--line-soft); }
 .card.open .card-body { display: block; }
 
+/* 카테고리 칩 (카드 제목 옆) */
+.cat-chip {
+  flex: 0 0 auto; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.02em;
+  border-radius: 999px; padding: 2px 8px; white-space: nowrap;
+  background: var(--bg-elev-2); color: var(--text-dim);
+}
+.cat-leadership { background: #22304f; color: #a9c2ff; }
+.cat-outing     { background: #143a2b; color: #8fe3bd; }
+.cat-notice     { background: #3a2f12; color: #ffd98c; }
+.cat-reminder   { background: #33244a; color: #e0c2ff; }
+
+/* 📌 고정(핀) 정보 — 메인 맨 위 */
+.pinned { display: grid; gap: 10px; margin-bottom: 22px; }
+.pin {
+  background: linear-gradient(180deg, rgba(122,162,255,0.08), transparent);
+  border: 1px solid var(--accent-dim); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 12px 14px;
+}
+.pin-title { font-weight: 800; font-size: 1rem; letter-spacing: -0.01em; }
+.pin-body { margin-top: 4px; }
+.pin-body > *:first-child { margin-top: 2px; }
+
 /* ── 주일 광고 헤더 (날짜 + 슬라이드 링크) ────────────── */
 .gwanggo-head {
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;

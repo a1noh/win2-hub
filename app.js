@@ -123,6 +123,8 @@
 
     var row1 = el("div", "card-row1");
     row1.appendChild(el("span", "card-title", inlineFormat(esc(item.title || "확인 필요"))));
+    var chip = categoryChip(item);
+    if (chip) row1.appendChild(chip);
     row1.appendChild(relBadge(item));
     if (hasBody) row1.appendChild(el("span", "card-chev", "▾"));
     head.appendChild(row1);
@@ -154,26 +156,29 @@
   function byStartAsc(a, b) { return ymdToMs(a.start) - ymdToMs(b.start); }
   function byEndDesc(a, b) { return ymdToMs(b.end || b.start) - ymdToMs(a.end || a.start); }
 
-  // 아이템 → 어느 탭에 카드가 있는가
-  function tabForItem(item) {
-    if (isPast(item)) return "past";
-    if (item.category === "leadership") return "leadership";
-    if (item.category === "outing") return "outing";
-    return "iljeong"; // notice / reminder 는 일정 탭에 표시
+  // 카테고리 → 칩 라벨 (이제 탭이 아니라 카드 위 작은 칩으로만 구분)
+  var CATEGORY_LABEL = {
+    leadership: "리더십",
+    outing: "아웃팅",
+    notice: "공지",
+    reminder: "리마인더"
+  };
+  function categoryChip(item) {
+    var label = CATEGORY_LABEL[item.category];
+    if (!label) return null;
+    return el("span", "cat-chip cat-" + item.category, esc(label));
   }
 
-  // ── 탭 정의 ───────────────────────────────────────────────
+  // ── 탭 정의 (메인 / 광고 / 보관함) ────────────────────────
   var TABS = [
-    { id: "iljeong",    label: "🗓️ 일정" },
-    { id: "gwanggo",    label: "📋 광고" },
-    { id: "leadership", label: "👥 리더십" },
-    { id: "outing",     label: "🧺 아웃팅" },
-    { id: "past",       label: "🗄️ 지난" }
+    { id: "main",    label: "🏠 메인" },
+    { id: "gwanggo", label: "📋 광고" },
+    { id: "archive", label: "🗄️ 보관함" }
   ];
   var galleryBuilt = false;
 
   function setActive(tabId, updateHash) {
-    if (!TABS.some(function (t) { return t.id === tabId; })) tabId = "iljeong";
+    if (!TABS.some(function (t) { return t.id === tabId; })) tabId = "main";
     TABS.forEach(function (t) {
       var panel = document.getElementById("panel-" + t.id);
       var btn = document.getElementById("tab-" + t.id);
@@ -191,36 +196,17 @@
     if (ab && ab.scrollIntoView) ab.scrollIntoView({ block: "nearest", inline: "center" });
   }
 
-  function jumpToItem(id, category) {
-    var tab = category === "leadership" ? "leadership"
-            : category === "outing" ? "outing" : "iljeong";
-    setActive(tab);
-    var card = document.getElementById("card-" + id);
-    if (!card) return;
-    if (!card.classList.contains("open") && !card.classList.contains("no-body")) {
-      var head = card.querySelector(".card-head");
-      if (head) head.click();
-    }
-    card.scrollIntoView({ behavior: "smooth", block: "start" });
-    flash(card);
-  }
-
-  // ── 타임라인 (일정 탭) ────────────────────────────────────
-  function buildTimeline(upcoming) {
-    if (!upcoming.length) return el("p", "muted empty", "예정된 일정이 없습니다.");
-    var ul = el("ul", "timeline");
-    upcoming.forEach(function (item) {
-      var li = document.createElement("li");
-      var btn = el("button");
-      btn.type = "button";
-      btn.appendChild(el("span", "tl-date", esc(fmtDate(ymdToMs(item.start)))));
-      btn.appendChild(el("span", "tl-title", inlineFormat(esc(item.title || "확인 필요"))));
-      btn.appendChild(relBadge(item));
-      btn.addEventListener("click", function () { jumpToItem(item.id, item.category); });
-      li.appendChild(btn);
-      ul.appendChild(li);
+  // ── 고정(핀) 정보 — 메인 맨 위 (날짜 없는 상시 정보) ──────
+  function buildPinned(pins) {
+    if (!pins || !pins.length) return null;
+    var wrap = el("div", "pinned");
+    pins.forEach(function (p) {
+      var box = el("div", "pin");
+      box.appendChild(el("div", "pin-title", "📌 " + inlineFormat(esc(p.title || "확인 필요"))));
+      if (p.body && p.body.trim()) box.appendChild(el("div", "md pin-body", renderMarkdown(p.body)));
+      wrap.appendChild(box);
     });
-    return ul;
+    return wrap;
   }
 
   // ── 주일 광고 헤더 (날짜 + 선택적 슬라이드 링크) ──────────
@@ -354,45 +340,30 @@
     });
     app.appendChild(main);
 
-    // 일정 탭: 타임라인 + (notice/reminder 카드)
-    var pIl = document.getElementById("panel-iljeong");
-    pIl.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
-    pIl.appendChild(buildTimeline(upcoming));
-    var loose = live.filter(function (it) { return it.category === "notice" || it.category === "reminder"; }).sort(byStartAsc);
-    if (loose.length) {
-      pIl.appendChild(el("h2", "panel-h sub", "📢 공지·리마인더"));
-      pIl.appendChild(buildCardGrid(loose));
-    }
+    // 🏠 메인: 고정 정보(있으면) + 다가오는 모든 일정 한 피드 (가까운 순)
+    var pMain = document.getElementById("panel-main");
+    var pinned = buildPinned(DATA.pinned);
+    if (pinned) pMain.appendChild(pinned);
+    pMain.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
+    pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다."));
 
-    // 광고 탭 (슬라이드 사진 그리드; 갤러리는 처음 열 때 lazy 생성)
+    // 📋 광고 (슬라이드 사진 그리드; 갤러리는 처음 열 때 lazy 생성)
     var pGw = document.getElementById("panel-gwanggo");
     var nPhotos = (DATA.photos || []).length;
     pGw.appendChild(el("h2", "panel-h", "📋 이번 주 광고 " + '<span class="count">' + nPhotos + "</span>"));
     if (DATA.gwanggo) pGw.appendChild(buildGwanggoHead(DATA.gwanggo));
     if (!nPhotos) pGw.appendChild(el("p", "muted empty", "광고 슬라이드가 없습니다."));
 
-    // 리더십 탭
-    var lead = live.filter(function (it) { return it.category === "leadership"; }).sort(byStartAsc);
-    var pLe = document.getElementById("panel-leadership");
-    pLe.appendChild(el("h2", "panel-h", "👥 리더십 " + '<span class="count">' + lead.length + "</span>"));
-    pLe.appendChild(buildCardGrid(lead, "예정된 리더십 일정이 없습니다."));
+    // 🗄️ 보관함 (지난 것 전부, 최신순 — 그냥 한 줄 목록)
+    var pAr = document.getElementById("panel-archive");
+    pAr.appendChild(el("h2", "panel-h", "🗄️ 보관함 " + '<span class="count">' + past.length + "</span>"));
+    pAr.appendChild(buildCardGrid(past, "보관된 공지가 없습니다."));
 
-    // 아웃팅 탭
-    var out = live.filter(function (it) { return it.category === "outing"; }).sort(byStartAsc);
-    var pOut = document.getElementById("panel-outing");
-    pOut.appendChild(el("h2", "panel-h", "🧺 아웃팅·모임 " + '<span class="count">' + out.length + "</span>"));
-    pOut.appendChild(buildCardGrid(out, "예정된 아웃팅·모임이 없습니다."));
-
-    // 지난 탭 (최신순)
-    var pPa = document.getElementById("panel-past");
-    pPa.appendChild(el("h2", "panel-h", "🗄️ 지난 공지 " + '<span class="count">' + past.length + "</span>"));
-    pPa.appendChild(buildCardGrid(past, "지난 공지가 없습니다."));
-
-    // 초기 탭 = 해시 또는 일정
+    // 초기 탭 = 해시 또는 메인
     var initial = (location.hash || "").replace("#", "");
-    setActive(initial || "iljeong", false);
+    setActive(initial || "main", false);
     window.addEventListener("hashchange", function () {
-      setActive((location.hash || "").replace("#", "") || "iljeong", false);
+      setActive((location.hash || "").replace("#", "") || "main", false);
     });
   }
 
