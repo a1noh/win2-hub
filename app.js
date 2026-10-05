@@ -1,5 +1,5 @@
 /* =============================================================
-   WIN2 공지 허브 — 렌더링 로직
+   WIN2 공지 허브 — 렌더링 로직 (v2: 탭 구조)
    내용 수정은 data.js 에서만 합니다. 이 파일은 건드릴 필요 없음.
    ============================================================= */
 (function () {
@@ -8,33 +8,20 @@
   var DATA = window.HUB_DATA || {};
   var TZ = "America/New_York";
 
-  var CATEGORY_LABEL = {
-    leadership: "리더십",
-    outing: "아웃팅·모임",
-    notice: "공지",
-    reminder: "리마인더"
-  };
-
   // ── 날짜 유틸 (America/New_York 기준) ─────────────────────
-  // 날짜만 비교하려고 UTC 자정 기준 ms 로 변환해서 다룬다.
-
   function todayNY() {
-    // en-CA 로케일 → "YYYY-MM-DD"
     var s = new Intl.DateTimeFormat("en-CA", {
       timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit"
     }).format(new Date());
     return ymdToMs(s);
   }
-
   function ymdToMs(str) {
     if (!str || !/^\d{4}-\d{2}-\d{2}$/.test(str)) return NaN;
     var p = str.split("-");
     return Date.UTC(+p[0], +p[1] - 1, +p[2]);
   }
-
   var DAY = 86400000;
   function daysBetween(a, b) { return Math.round((b - a) / DAY); }
-
   function fmtDate(ms) {
     if (isNaN(ms)) return "확인 필요";
     var d = new Date(ms);
@@ -42,7 +29,6 @@
     var wd = ["일", "월", "화", "수", "목", "금", "토"][d.getUTCDay()];
     return mo + "/" + da + "(" + wd + ")";
   }
-
   function dateRangeText(item) {
     var s = ymdToMs(item.start), e = ymdToMs(item.end || item.start);
     if (isNaN(s)) return "확인 필요";
@@ -58,8 +44,6 @@
     if (isNaN(e)) return false;
     return e < TODAY;
   }
-
-  // 상대 날짜 라벨 → { text, kind }
   function relLabel(item) {
     if (item.done) return { text: "지남", kind: "past" };
     var s = ymdToMs(item.start), e = ymdToMs(item.end || item.start);
@@ -75,74 +59,35 @@
     return { text: "D-" + diff, kind: diff <= 7 ? "soon" : "far" };
   }
 
-  // ── HTML 이스케이프 (raw innerHTML 사용 금지) ─────────────
+  // ── HTML 이스케이프 ───────────────────────────────────────
   function esc(str) {
     return String(str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
-
-  // ── 인라인 포맷: **굵게**, @멘션 ──────────────────────────
-  // 입력은 반드시 이미 escape 된 문자열이어야 한다.
   function inlineFormat(escaped) {
-    // @이름 (한글/영문/숫자/_), 멘션 칩으로
-    escaped = escaped.replace(
-      /@([0-9A-Za-z_가-힣]+)/g,
-      '<span class="mention">@$1</span>'
-    );
-    // **굵게**
+    escaped = escaped.replace(/@([0-9A-Za-z_가-힣]+)/g, '<span class="mention">@$1</span>');
     escaped = escaped.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     return escaped;
   }
 
   // ── markdown-lite 렌더러 ──────────────────────────────────
-  //   ## 제목 / - · * 글머리 / N. 번호 / **굵게** / @멘션 / 빈 줄=문단
   function renderMarkdown(src) {
     var lines = String(src || "").split("\n");
-    var html = "";
-    var listType = null;   // "ul" | "ol" | null
-    var paraBuf = [];
-
-    function flushList() {
-      if (listType) { html += "</" + listType + ">"; listType = null; }
-    }
-    function flushPara() {
-      if (paraBuf.length) {
-        html += "<p>" + paraBuf.join("<br>") + "</p>";
-        paraBuf = [];
-      }
-    }
-    function openList(type) {
-      if (listType !== type) { flushList(); html += "<" + type + ">"; listType = type; }
-    }
-
+    var html = "", listType = null, paraBuf = [];
+    function flushList() { if (listType) { html += "</" + listType + ">"; listType = null; } }
+    function flushPara() { if (paraBuf.length) { html += "<p>" + paraBuf.join("<br>") + "</p>"; paraBuf = []; } }
+    function openList(type) { if (listType !== type) { flushList(); html += "<" + type + ">"; listType = type; } }
     for (var i = 0; i < lines.length; i++) {
-      var raw = lines[i];
-      var line = raw.replace(/\s+$/, "");
-      var t = line.trim();
-
+      var t = lines[i].replace(/\s+$/, "").trim();
       if (t === "") { flushPara(); flushList(); continue; }
-
-      var mH = t.match(/^#{2,3}\s+(.*)$/);              // ## / ###
-      var mUL = t.match(/^[-*]\s+(.*)$/);               // - 또는 *
-      var mOL = t.match(/^(\d+)\.\s+(.*)$/);            // 1. 2. ...
-
-      if (mH) {
-        flushPara(); flushList();
-        html += "<h4>" + inlineFormat(esc(mH[1])) + "</h4>";
-      } else if (mUL) {
-        flushPara(); openList("ul");
-        html += "<li>" + inlineFormat(esc(mUL[1])) + "</li>";
-      } else if (mOL) {
-        flushPara(); openList("ol");
-        html += "<li>" + inlineFormat(esc(mOL[2])) + "</li>";
-      } else {
-        flushList();
-        paraBuf.push(inlineFormat(esc(t)));
-      }
+      var mH = t.match(/^#{2,3}\s+(.*)$/);
+      var mUL = t.match(/^[-*]\s+(.*)$/);
+      var mOL = t.match(/^(\d+)\.\s+(.*)$/);
+      if (mH) { flushPara(); flushList(); html += "<h4>" + inlineFormat(esc(mH[1])) + "</h4>"; }
+      else if (mUL) { flushPara(); openList("ul"); html += "<li>" + inlineFormat(esc(mUL[1])) + "</li>"; }
+      else if (mOL) { flushPara(); openList("ol"); html += "<li>" + inlineFormat(esc(mOL[2])) + "</li>"; }
+      else { flushList(); paraBuf.push(inlineFormat(esc(t))); }
     }
     flushPara(); flushList();
     return html;
@@ -152,20 +97,23 @@
   function el(tag, cls, html) {
     var n = document.createElement(tag);
     if (cls) n.className = cls;
-    if (html != null) n.innerHTML = html;   // html 은 호출부에서 escape 처리된 것만 전달
+    if (html != null) n.innerHTML = html;   // 호출부에서 escape 된 것만 전달
     return n;
   }
-
   function relBadge(item) {
     var r = relLabel(item);
     return el("span", "rel " + r.kind, esc(r.text));
+  }
+  function flash(card) {
+    card.classList.remove("flash");
+    void card.offsetWidth;
+    card.classList.add("flash");
   }
 
   // ── 카드 ──────────────────────────────────────────────────
   function buildCard(item) {
     var hasBody = item.body && item.body.trim() !== "";
     var hasPeople = item.people && item.people.length;
-
     var card = el("div", "card" + (hasBody ? "" : " no-body"));
     card.id = "card-" + item.id;
 
@@ -178,94 +126,88 @@
     row1.appendChild(relBadge(item));
     if (hasBody) row1.appendChild(el("span", "card-chev", "▾"));
     head.appendChild(row1);
-
     head.appendChild(el("div", "card-date", esc(dateRangeText(item))));
 
-    if (item.summary) {
-      head.appendChild(el("div", "card-summary", inlineFormat(esc(item.summary))));
-    } else if (!hasBody && !hasPeople) {
-      head.appendChild(el("div", "card-summary muted", "확인 필요"));
-    }
+    if (item.summary) head.appendChild(el("div", "card-summary", inlineFormat(esc(item.summary))));
+    else if (!hasBody && !hasPeople) head.appendChild(el("div", "card-summary muted", "확인 필요"));
 
     if (hasPeople) {
       var pe = el("div", "people");
-      item.people.forEach(function (name) {
-        pe.appendChild(el("span", "chip", esc(name)));
-      });
+      item.people.forEach(function (name) { pe.appendChild(el("span", "chip", esc(name))); });
       head.appendChild(pe);
     }
-
     card.appendChild(head);
 
     if (hasBody) {
       var body = el("div", "card-body");
       body.appendChild(el("div", "md", renderMarkdown(item.body)));
       card.appendChild(body);
-
       head.addEventListener("click", function () {
         var open = card.classList.toggle("open");
         head.setAttribute("aria-expanded", open ? "true" : "false");
       });
     }
-
     return card;
   }
 
-  // ── 섹션 생성 ─────────────────────────────────────────────
-  function sectionEl(titleHtml, countText) {
-    var sec = el("section", "section");
-    var h = el("h2", null, titleHtml);
-    if (countText != null) h.appendChild(el("span", "count", esc(countText)));
-    sec.appendChild(h);
-    return sec;
+  // ── 정렬 헬퍼 ─────────────────────────────────────────────
+  function byStartAsc(a, b) { return ymdToMs(a.start) - ymdToMs(b.start); }
+  function byEndDesc(a, b) { return ymdToMs(b.end || b.start) - ymdToMs(a.end || a.start); }
+
+  // 아이템 → 어느 탭에 카드가 있는가
+  function tabForItem(item) {
+    if (isPast(item)) return "past";
+    if (item.category === "leadership") return "leadership";
+    if (item.category === "outing") return "outing";
+    return "iljeong"; // notice / reminder 는 일정 탭에 표시
   }
 
-  // ── 주일 광고 ─────────────────────────────────────────────
-  function buildGwanggo(g) {
-    var sec = sectionEl("📋 이번 주 광고");
-    var card = el("div", "card gwanggo open");
-    var body = el("div", "card-body");
-    body.style.borderTop = "none";
-    body.style.display = "block";
+  // ── 탭 정의 ───────────────────────────────────────────────
+  var TABS = [
+    { id: "iljeong",    label: "🗓️ 일정" },
+    { id: "gwanggo",    label: "📋 광고" },
+    { id: "leadership", label: "👥 리더십" },
+    { id: "outing",     label: "🧺 아웃팅" },
+    { id: "past",       label: "🗄️ 지난" }
+  ];
+  var galleryBuilt = false;
 
-    if (g.date) {
-      body.appendChild(el("div", "card-date", esc(fmtDate(ymdToMs(g.date)) + " 주일")));
+  function setActive(tabId, updateHash) {
+    if (!TABS.some(function (t) { return t.id === tabId; })) tabId = "iljeong";
+    TABS.forEach(function (t) {
+      var panel = document.getElementById("panel-" + t.id);
+      var btn = document.getElementById("tab-" + t.id);
+      var on = t.id === tabId;
+      if (panel) panel.classList.toggle("active", on);
+      if (btn) { btn.classList.toggle("active", on); btn.setAttribute("aria-selected", on ? "true" : "false"); }
+    });
+    if (tabId === "gwanggo" && !galleryBuilt) buildGallery();
+    if (updateHash !== false) {
+      if (history.replaceState) history.replaceState(null, "", "#" + tabId);
+      else location.hash = tabId;
     }
-
-    function group(label, arr) {
-      if (!arr || !arr.length) return;
-      var grp = el("div", "grp");
-      grp.appendChild(el("div", "grp-label", esc(label)));
-      var ol = document.createElement("ol");
-      arr.forEach(function (line) {
-        ol.appendChild(el("li", null, esc(line)));
-      });
-      grp.appendChild(ol);
-      body.appendChild(grp);
-    }
-    group("[공통]", g.common);
-    group("[윈투]", g.win2);
-
-    if (g.slidesUrl && g.slidesUrl.trim()) {
-      var a = el("a", "slide-link", "📑 슬라이드 보기");
-      a.href = g.slidesUrl;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      body.appendChild(a);
-    }
-
-    card.appendChild(body);
-    sec.appendChild(card);
-    return sec;
+    // 활성 탭 버튼을 가로 스크롤 영역에서 보이게
+    var ab = document.getElementById("tab-" + tabId);
+    if (ab && ab.scrollIntoView) ab.scrollIntoView({ block: "nearest", inline: "center" });
   }
 
-  // ── 타임라인 ──────────────────────────────────────────────
+  function jumpToItem(id, category) {
+    var tab = category === "leadership" ? "leadership"
+            : category === "outing" ? "outing" : "iljeong";
+    setActive(tab);
+    var card = document.getElementById("card-" + id);
+    if (!card) return;
+    if (!card.classList.contains("open") && !card.classList.contains("no-body")) {
+      var head = card.querySelector(".card-head");
+      if (head) head.click();
+    }
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+    flash(card);
+  }
+
+  // ── 타임라인 (일정 탭) ────────────────────────────────────
   function buildTimeline(upcoming) {
-    var sec = sectionEl("🗓️ 다가오는 일정", String(upcoming.length));
-    if (!upcoming.length) {
-      sec.appendChild(el("p", "muted", "예정된 일정이 없습니다."));
-      return sec;
-    }
+    if (!upcoming.length) return el("p", "muted empty", "예정된 일정이 없습니다.");
     var ul = el("ul", "timeline");
     upcoming.forEach(function (item) {
       var li = document.createElement("li");
@@ -274,69 +216,115 @@
       btn.appendChild(el("span", "tl-date", esc(fmtDate(ymdToMs(item.start)))));
       btn.appendChild(el("span", "tl-title", inlineFormat(esc(item.title || "확인 필요"))));
       btn.appendChild(relBadge(item));
-      btn.addEventListener("click", function () { scrollToCard(item.id); });
+      btn.addEventListener("click", function () { jumpToItem(item.id, item.category); });
       li.appendChild(btn);
       ul.appendChild(li);
     });
-    sec.appendChild(ul);
-    return sec;
+    return ul;
   }
 
-  function scrollToCard(id) {
-    var card = document.getElementById("card-" + id);
-    if (!card) return;
-    // 지난 공지 안에 있으면 먼저 펼친다
-    var pastSec = card.closest(".section.past");
-    if (pastSec && !pastSec.classList.contains("open")) {
-      pastSec.classList.add("open");
+  // ── 주일 광고 헤더 (날짜 + 선택적 슬라이드 링크) ──────────
+  //   광고 내용 자체는 슬라이드 사진 그리드로 보여준다.
+  function buildGwanggoHead(g) {
+    var wrap = el("div", "gwanggo-head");
+    if (g.date) wrap.appendChild(el("div", "gwanggo-date", esc(fmtDate(ymdToMs(g.date)) + " 주일 광고")));
+    if (g.slidesUrl && g.slidesUrl.trim()) {
+      var a = el("a", "slide-link", "📑 구글 슬라이드 전체 보기");
+      a.href = g.slidesUrl; a.target = "_blank"; a.rel = "noopener noreferrer";
+      wrap.appendChild(a);
     }
-    if (card.classList.contains("no-body")) {
-      // 본문 없는 카드는 펼칠 게 없음
-    } else if (!card.classList.contains("open")) {
-      var head = card.querySelector(".card-head");
-      if (head) head.click();
-    }
-    card.scrollIntoView({ behavior: "smooth", block: "start" });
-    card.classList.remove("flash");
-    void card.offsetWidth;        // reflow → 애니메이션 재시작
-    card.classList.add("flash");
+    return wrap;
   }
 
-  // ── 일반 아이템 섹션 ──────────────────────────────────────
-  function buildItemSection(titleHtml, items) {
-    var sec = sectionEl(titleHtml, String(items.length));
-    items.forEach(function (item) { sec.appendChild(buildCard(item)); });
-    return sec;
+  // ── 카드 그리드 ───────────────────────────────────────────
+  function buildCardGrid(items, emptyMsg) {
+    if (!items.length) return el("p", "muted empty", emptyMsg || "항목이 없습니다.");
+    var grid = el("div", "card-grid");
+    items.forEach(function (it) { grid.appendChild(buildCard(it)); });
+    return grid;
   }
 
-  // ── 지난 공지 (접힘) ──────────────────────────────────────
-  function buildPastSection(items) {
-    var sec = el("section", "section past");
-    var toggle = el("button", "past-toggle");
-    toggle.type = "button";
-    toggle.innerHTML =
-      '<span>🗄️ 지난 공지 <span class="count">' + esc(String(items.length)) + "</span></span>" +
-      '<span class="chev">▾</span>';
-    var list = el("div", "past-list");
-    items.forEach(function (item) { list.appendChild(buildCard(item)); });
-    toggle.addEventListener("click", function () { sec.classList.toggle("open"); });
-    sec.appendChild(toggle);
-    sec.appendChild(list);
-    return sec;
+  // ── 사진 갤러리 + 라이트박스 ──────────────────────────────
+  function buildGallery() {
+    galleryBuilt = true;
+    var panel = document.getElementById("panel-gwanggo");
+    var photos = DATA.photos || [];
+    if (!photos.length) { panel.appendChild(el("p", "muted empty", "사진이 없습니다.")); return; }
+    var grid = el("div", "gallery");
+    photos.forEach(function (p, idx) {
+      var btn = el("button", "gphoto");
+      btn.type = "button";
+      btn.setAttribute("aria-label", (p.caption || "사진") + " 크게 보기");
+      var img = document.createElement("img");
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.alt = p.caption || "";
+      img.src = p.thumb || p.src;
+      btn.appendChild(img);
+      if (p.caption) btn.appendChild(el("span", "gcap", esc(p.caption)));
+      btn.addEventListener("click", function () { openLightbox(idx); });
+      grid.appendChild(btn);
+    });
+    panel.appendChild(grid);
   }
 
-  // ── 정렬 헬퍼 ─────────────────────────────────────────────
-  function byStartAsc(a, b) { return ymdToMs(a.start) - ymdToMs(b.start); }
-  function byEndDesc(a, b) {
-    return ymdToMs(b.end || b.start) - ymdToMs(a.end || a.start);
+  var lb = null, lbIndex = 0;
+  function ensureLightbox() {
+    if (lb) return lb;
+    lb = el("div", "lightbox");
+    lb.setAttribute("role", "dialog");
+    lb.setAttribute("aria-modal", "true");
+    lb.innerHTML =
+      '<button class="lb-close" aria-label="닫기">✕</button>' +
+      '<button class="lb-nav lb-prev" aria-label="이전">‹</button>' +
+      '<figure class="lb-fig"><img class="lb-img" alt=""><figcaption class="lb-cap"></figcaption></figure>' +
+      '<button class="lb-nav lb-next" aria-label="다음">›</button>';
+    document.body.appendChild(lb);
+    lb.querySelector(".lb-close").addEventListener("click", closeLightbox);
+    lb.querySelector(".lb-prev").addEventListener("click", function (e) { e.stopPropagation(); step(-1); });
+    lb.querySelector(".lb-next").addEventListener("click", function (e) { e.stopPropagation(); step(1); });
+    lb.addEventListener("click", function (e) { if (e.target === lb) closeLightbox(); });
+    document.addEventListener("keydown", function (e) {
+      if (!lb.classList.contains("open")) return;
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
+    });
+    return lb;
   }
+  function showPhoto(i) {
+    var photos = DATA.photos || [];
+    lbIndex = (i + photos.length) % photos.length;
+    var p = photos[lbIndex];
+    var img = lb.querySelector(".lb-img");
+    img.src = p.src || p.thumb;
+    img.alt = p.caption || "";
+    lb.querySelector(".lb-cap").textContent = p.caption || "";
+  }
+  function openLightbox(i) {
+    ensureLightbox();
+    showPhoto(i);
+    lb.classList.add("open");
+    document.body.classList.add("no-scroll");
+  }
+  function closeLightbox() {
+    if (!lb) return;
+    lb.classList.remove("open");
+    document.body.classList.remove("no-scroll");
+  }
+  function step(d) { showPhoto(lbIndex + d); }
 
   // ── 메인 렌더 ─────────────────────────────────────────────
   function render() {
     var app = document.getElementById("app");
     app.innerHTML = "";
 
-    // 헤더
+    var items = (DATA.items || []).slice();
+    var live = items.filter(function (it) { return !isPast(it); });
+    var past = items.filter(isPast).sort(byEndDesc);
+    var upcoming = live.slice().sort(byStartAsc);
+
+    // 상단바: 헤더 + 탭 (탭은 sticky)
     var header = el("header", "site-header");
     header.appendChild(el("h1", null, "WIN2 공지 허브"));
     var upd = DATA.updated
@@ -345,51 +333,69 @@
     header.appendChild(el("div", "updated", upd));
     app.appendChild(header);
 
-    var items = (DATA.items || []).slice();
-    var past = items.filter(isPast).sort(byEndDesc);
-    var live = items.filter(function (it) { return !isPast(it); });
+    var nav = el("nav", "tabs");
+    nav.setAttribute("role", "tablist");
+    TABS.forEach(function (t) {
+      var b = el("button", "tab", esc(t.label));
+      b.type = "button";
+      b.id = "tab-" + t.id;
+      b.setAttribute("role", "tab");
+      b.addEventListener("click", function () { setActive(t.id); });
+      nav.appendChild(b);
+    });
+    app.appendChild(nav);
 
-    // 1) 다가오는 일정 (모든 live 아이템)
-    var upcoming = live.slice().sort(byStartAsc);
-    app.appendChild(buildTimeline(upcoming));
+    var main = el("div", "panels");
+    TABS.forEach(function (t) {
+      var panel = el("section", "panel");
+      panel.id = "panel-" + t.id;
+      panel.setAttribute("role", "tabpanel");
+      main.appendChild(panel);
+    });
+    app.appendChild(main);
 
-    // 2) 이번 주 광고
-    if (DATA.gwanggo) app.appendChild(buildGwanggo(DATA.gwanggo));
-
-    // 3) 공지·리마인더 (있을 때만)
-    var notices = live.filter(function (it) {
-      return it.category === "notice" || it.category === "reminder";
-    }).sort(byStartAsc);
-    if (notices.length) {
-      app.appendChild(buildItemSection("📢 공지·리마인더", notices));
+    // 일정 탭: 타임라인 + (notice/reminder 카드)
+    var pIl = document.getElementById("panel-iljeong");
+    pIl.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
+    pIl.appendChild(buildTimeline(upcoming));
+    var loose = live.filter(function (it) { return it.category === "notice" || it.category === "reminder"; }).sort(byStartAsc);
+    if (loose.length) {
+      pIl.appendChild(el("h2", "panel-h sub", "📢 공지·리마인더"));
+      pIl.appendChild(buildCardGrid(loose));
     }
 
-    // 4) 리더십
-    var leadership = live.filter(function (it) { return it.category === "leadership"; })
-      .sort(byStartAsc);
-    if (leadership.length) {
-      app.appendChild(buildItemSection("👥 리더십", leadership));
-    }
+    // 광고 탭 (슬라이드 사진 그리드; 갤러리는 처음 열 때 lazy 생성)
+    var pGw = document.getElementById("panel-gwanggo");
+    var nPhotos = (DATA.photos || []).length;
+    pGw.appendChild(el("h2", "panel-h", "📋 이번 주 광고 " + '<span class="count">' + nPhotos + "</span>"));
+    if (DATA.gwanggo) pGw.appendChild(buildGwanggoHead(DATA.gwanggo));
+    if (!nPhotos) pGw.appendChild(el("p", "muted empty", "광고 슬라이드가 없습니다."));
 
-    // 5) 아웃팅·모임
-    var outings = live.filter(function (it) { return it.category === "outing"; })
-      .sort(byStartAsc);
-    if (outings.length) {
-      app.appendChild(buildItemSection("🧺 아웃팅·모임", outings));
-    }
+    // 리더십 탭
+    var lead = live.filter(function (it) { return it.category === "leadership"; }).sort(byStartAsc);
+    var pLe = document.getElementById("panel-leadership");
+    pLe.appendChild(el("h2", "panel-h", "👥 리더십 " + '<span class="count">' + lead.length + "</span>"));
+    pLe.appendChild(buildCardGrid(lead, "예정된 리더십 일정이 없습니다."));
 
-    // 6) 지난 공지 (접힘)
-    if (past.length) app.appendChild(buildPastSection(past));
+    // 아웃팅 탭
+    var out = live.filter(function (it) { return it.category === "outing"; }).sort(byStartAsc);
+    var pOut = document.getElementById("panel-outing");
+    pOut.appendChild(el("h2", "panel-h", "🧺 아웃팅·모임 " + '<span class="count">' + out.length + "</span>"));
+    pOut.appendChild(buildCardGrid(out, "예정된 아웃팅·모임이 없습니다."));
 
-    // 푸터
-    var footer = el("footer", "site-footer");
-    footer.appendChild(el("div", null, "WIN2 공지 허브 · 온누리 IN2 New York"));
-    app.appendChild(footer);
+    // 지난 탭 (최신순)
+    var pPa = document.getElementById("panel-past");
+    pPa.appendChild(el("h2", "panel-h", "🗄️ 지난 공지 " + '<span class="count">' + past.length + "</span>"));
+    pPa.appendChild(buildCardGrid(past, "지난 공지가 없습니다."));
+
+    // 초기 탭 = 해시 또는 일정
+    var initial = (location.hash || "").replace("#", "");
+    setActive(initial || "iljeong", false);
+    window.addEventListener("hashchange", function () {
+      setActive((location.hash || "").replace("#", "") || "iljeong", false);
+    });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", render);
-  } else {
-    render();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", render);
+  else render();
 })();
