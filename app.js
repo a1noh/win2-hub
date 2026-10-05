@@ -169,12 +169,14 @@
     return el("span", "cat-chip cat-" + item.category, esc(label));
   }
 
-  // ── 탭 정의 (메인 / 광고 / 보관함) ────────────────────────
-  var TABS = [
-    { id: "main",    label: "🏠 메인" },
-    { id: "gwanggo", label: "📋 광고" },
-    { id: "archive", label: "🗄️ 보관함" }
-  ];
+  // ── 탭 정의 ───────────────────────────────────────────────
+  //   🙏 기도 탭은 기도 데이터가 있을 때만 (= 로컬 data.local.js 로드 시) 나타난다.
+  //   공개 사이트에는 기도 데이터가 없으므로 기도 탭이 보이지 않는다.
+  var hasPrayer = !!(DATA.prayer && DATA.prayer.people && DATA.prayer.people.length);
+  var TABS = [{ id: "main", label: "🏠 메인" }];
+  if (hasPrayer) TABS.push({ id: "prayer", label: "🙏 기도" });
+  TABS.push({ id: "gwanggo", label: "📋 광고" });
+  TABS.push({ id: "archive", label: "🗄️ 보관함" });
   var galleryBuilt = false;
 
   function setActive(tabId, updateHash) {
@@ -206,6 +208,30 @@
       if (p.body && p.body.trim()) box.appendChild(el("div", "md pin-body", renderMarkdown(p.body)));
       wrap.appendChild(box);
     });
+    return wrap;
+  }
+
+  // ── 기도 제목 (🙏 기도 탭) ────────────────────────────────
+  function buildPrayer(pr) {
+    var wrap = document.createElement("div");
+    var people = (pr && pr.people) || [];
+    if (!people.length) { wrap.appendChild(el("p", "muted empty", "기도 제목이 없습니다.")); return wrap; }
+    var grid = el("div", "card-grid");
+    people.forEach(function (person) {
+      var card = el("div", "card pray-card");
+      var inner = el("div", "pray-inner");
+      inner.appendChild(el("div", "pray-name", inlineFormat(esc(person.name || "확인 필요"))));
+      if (person.requests && person.requests.length) {
+        var ul = el("ul", "pray-list");
+        person.requests.forEach(function (r) { ul.appendChild(el("li", null, inlineFormat(esc(r)))); });
+        inner.appendChild(ul);
+      } else {
+        inner.appendChild(el("div", "pray-empty muted", "확인 필요"));
+      }
+      card.appendChild(inner);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
     return wrap;
   }
 
@@ -346,6 +372,17 @@
     if (pinned) pMain.appendChild(pinned);
     pMain.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
     pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다."));
+
+    // 🙏 기도 제목 (기도 탭이 있을 때만 = 로컬에서만)
+    var pPr = document.getElementById("panel-prayer");
+    if (pPr) {
+      var nPray = (DATA.prayer && DATA.prayer.people ? DATA.prayer.people.length : 0);
+      pPr.appendChild(el("h2", "panel-h", "🙏 기도 제목 " + '<span class="count">' + nPray + "</span>"));
+      if (DATA.prayer && DATA.prayer.updated) {
+        pPr.appendChild(el("div", "gwanggo-head", '<span class="gwanggo-date">' + esc("기준: " + DATA.prayer.updated) + "</span>"));
+      }
+      pPr.appendChild(buildPrayer(DATA.prayer));
+    }
 
     // 📋 광고 (슬라이드 사진 그리드; 갤러리는 처음 열 때 lazy 생성)
     var pGw = document.getElementById("panel-gwanggo");

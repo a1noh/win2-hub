@@ -173,6 +173,17 @@ body.no-scroll { overflow: hidden; }
 .cat-notice     { background: #3a2f12; color: #ffd98c; }
 .cat-reminder   { background: #33244a; color: #e0c2ff; }
 
+/* 🙏 기도 제목 카드 */
+.pray-inner { padding: 14px; }
+.pray-name {
+  font-weight: 800; font-size: 1rem; letter-spacing: -0.01em;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
+}
+.pray-list { margin: 10px 0 0; padding-left: 1.15rem; }
+.pray-list li { margin: 5px 0; font-size: 0.92rem; color: var(--text); }
+.pray-list li::marker { color: var(--accent); }
+.pray-empty { margin-top: 10px; font-size: 0.88rem; }
+
 /* 📌 고정(핀) 정보 — 메인 맨 위 */
 .pinned { display: grid; gap: 10px; margin-bottom: 22px; }
 .pin {
