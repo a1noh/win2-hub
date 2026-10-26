@@ -173,7 +173,6 @@
   var TABS = [
     { id: "main",    label: "🏠 메인" },
     { id: "prayer",  label: "🙏 기도" },
-    { id: "gwanggo", label: "📋 광고" },
     { id: "archive", label: "🗄️ 보관함" }
   ];
 
@@ -201,7 +200,6 @@
       if (panel) panel.classList.toggle("active", on);
       if (btn) { btn.classList.toggle("active", on); btn.setAttribute("aria-selected", on ? "true" : "false"); }
     });
-    if (tabId === "gwanggo" && !galleryBuilt) buildGallery();
     if (updateHash !== false) {
       if (history.replaceState) history.replaceState(null, "", "#" + tabId);
       else location.hash = tabId;
@@ -432,13 +430,6 @@
       }
       pPr.appendChild(buildPrayer(DATA.prayer));
     }
-
-    // 📋 광고 (슬라이드 사진 그리드; 갤러리는 처음 열 때 lazy 생성)
-    var pGw = document.getElementById("panel-gwanggo");
-    var nPhotos = (DATA.photos || []).length;
-    pGw.appendChild(el("h2", "panel-h", "📋 이번 주 광고 " + '<span class="count">' + nPhotos + "</span>"));
-    if (DATA.gwanggo) pGw.appendChild(buildGwanggoHead(DATA.gwanggo));
-    if (!nPhotos) pGw.appendChild(el("p", "muted empty", "광고 슬라이드가 없습니다."));
 
     // 🗄️ 보관함 (지난 것 전부, 최신순 — 그냥 한 줄 목록)
     var pAr = document.getElementById("panel-archive");
