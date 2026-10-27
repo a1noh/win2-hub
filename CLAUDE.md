@@ -25,8 +25,10 @@ Austin이 **Google Drive 폴더 링크 + 새 일정/카카오톡 메시지**를 
 5. `index.html`의 `?v=N` 캐시 버전 올리기
 
 ## 푸시 규칙
-항상 바뀐 내용을 **먼저 요약해서 보여주고 Austin의 OK를 받은 뒤**에만
-`git add . && git commit && git push` 한다 (공개 사이트라 검토 후 배포). 배포 1~2분 내 반영.
+업데이트를 반영하면 **OK를 기다리지 말고 바로** `git add . && git commit && git push`
+한다. 푸시 후 **라이브 링크(https://a1noh.github.io/win2-hub/)를 눈에 띄게 띄우고**,
+바뀐 내용을 짧게 요약한다 (배포 1~2분 내 반영). `data.local.js`는 절대 커밋하지 않고,
+커밋에는 바뀐 파일만 담는다(의도치 않은 `AGENTS.md` 등 제외).
 
 ## 날짜/시간
 날짜 표시는 이미 동적이다 — `app.js`가 매 로드 시 America/New_York 기준 현재 날짜로
