@@ -223,15 +223,62 @@
   }
 
   // ── 스카이룸 매뉴얼 (📘 스카이룸 탭) ──────────────────────
+  //   체크 상태는 이 기기(localStorage)에만 저장되고, 일요일마다 새로 시작합니다.
+  var SKY_CHECKS_KEY = "win2_skyroom_checks";
+  function skyWeek() {
+    var today = todayNY();
+    return String(today - new Date(today).getUTCDay() * DAY); // 이번 주 일요일
+  }
+  function loadSkyChecks() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(SKY_CHECKS_KEY));
+      if (saved && saved.week === skyWeek() && saved.done) return saved.done;
+    } catch (e) {}
+    return {};
+  }
+  function saveSkyChecks(done) {
+    try { localStorage.setItem(SKY_CHECKS_KEY, JSON.stringify({ week: skyWeek(), done: done })); } catch (e) {}
+  }
+
   function buildSkyroom(sky) {
+    var wrap = document.createElement("div");
     var grid = el("div", "card-grid");
+    var done = loadSkyChecks();
+    var boxes = [], counters = [];
+    function refreshCounts() { counters.forEach(function (fn) { fn(); }); }
+
     ((sky && sky.sections) || []).forEach(function (section) {
       var card = el("div", "card sky-card");
-      card.appendChild(el("h3", "sky-title", esc(section.title || "")));
+      var head = el("h3", "sky-title", esc(section.title || ""));
+      var count = el("span", "sky-count");
+      head.appendChild(count);
+      card.appendChild(head);
       var ol = el("ol", "sky-steps");
+      var sectionBoxes = [];
+      counters.push(function () {
+        var n = sectionBoxes.filter(function (b) { return b.checked; }).length;
+        count.textContent = n + "/" + sectionBoxes.length;
+        count.classList.toggle("all-done", n === sectionBoxes.length);
+      });
       (section.steps || []).forEach(function (step) {
-        var li = el("li", "sky-step", inlineFormat(esc(step.text || "")));
-        if (step.tag) li.appendChild(el("span", "sky-tag", esc(step.tag)));
+        var li = el("li", "sky-step");
+        var key = section.title + "|" + step.text;
+        var label = el("label", "sky-check");
+        var box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = !!done[key];
+        box.addEventListener("change", function () {
+          if (box.checked) done[key] = 1; else delete done[key];
+          saveSkyChecks(done);
+          refreshCounts();
+        });
+        label.appendChild(box);
+        var text = el("span", "sky-text", inlineFormat(esc(step.text || "")));
+        if (step.tag) text.appendChild(el("span", "sky-tag", esc(step.tag)));
+        label.appendChild(text);
+        li.appendChild(label);
+        boxes.push(box);
+        sectionBoxes.push(box);
         (step.photos || []).forEach(function (p) {
           var btn = el("button", "sky-photo");
           btn.type = "button";
@@ -250,7 +297,20 @@
       card.appendChild(ol);
       grid.appendChild(card);
     });
-    return grid;
+    wrap.appendChild(grid);
+
+    var reset = el("button", "sky-reset", "체크 초기화");
+    reset.type = "button";
+    reset.addEventListener("click", function () {
+      if (!window.confirm("체크를 모두 지울까요?")) return;
+      done = {};
+      boxes.forEach(function (b) { b.checked = false; });
+      saveSkyChecks(done);
+      refreshCounts();
+    });
+    wrap.appendChild(reset);
+    refreshCounts();
+    return wrap;
   }
 
   // 🔒 사이트 비밀번호 입력 화면 (전체 사이트 잠금)

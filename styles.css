@@ -203,19 +203,34 @@ body.no-scroll { overflow: hidden; }
 /* 📘 스카이룸 매뉴얼 */
 .sky-card { padding: 14px; }
 .sky-title {
+  display: flex; justify-content: space-between; align-items: center;
   margin: 0; font-weight: 800; font-size: 1rem; letter-spacing: -0.01em;
   padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
 }
+.sky-count { font-size: 0.82rem; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.sky-count.all-done { color: var(--now); }
 .sky-steps { margin: 10px 0 0; padding-left: 1.4rem; }
 .sky-step { margin: 10px 0; font-size: 0.94rem; color: var(--text); }
 .sky-step::marker { color: var(--accent); font-weight: 800; }
+.sky-check { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.sky-check input {
+  flex: none; width: 20px; height: 20px; margin: 1px 0 0;
+  accent-color: var(--accent); cursor: pointer;
+}
+.sky-check input:checked + .sky-text { color: var(--text-mute); text-decoration: line-through; }
+.sky-reset {
+  margin-top: 14px; padding: 8px 14px; font: inherit; font-size: 0.86rem;
+  color: var(--text-dim); background: none; cursor: pointer;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+.sky-reset:hover { color: var(--text); border-color: var(--accent); }
 .sky-tag {
   display: inline-block; margin-left: 6px; padding: 1px 8px; vertical-align: 1px;
   border-radius: 999px; background: var(--chip-bg); color: var(--chip-text);
   font-size: 0.74rem; font-weight: 700; white-space: nowrap;
 }
 .sky-photo {
-  display: block; width: 132px; margin-top: 8px; padding: 0;
+  display: block; width: 132px; margin: 8px 0 0 30px; padding: 0;
   background: none; border: 1px solid var(--line); border-radius: var(--radius-sm);
   overflow: hidden; cursor: zoom-in;
 }
