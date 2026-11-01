@@ -200,16 +200,28 @@ body.no-scroll { overflow: hidden; }
 }
 .lock-err { min-height: 1.2em; margin-top: 10px; font-size: 0.84rem; color: #ff9b9b; }
 
-/* 🙏 기도 제목 카드 */
-.pray-inner { padding: 14px; }
-.pray-name {
-  font-weight: 800; font-size: 1rem; letter-spacing: -0.01em;
+/* 📘 스카이룸 매뉴얼 */
+.sky-card { padding: 14px; }
+.sky-title {
+  margin: 0; font-weight: 800; font-size: 1rem; letter-spacing: -0.01em;
   padding-bottom: 8px; border-bottom: 1px solid var(--line-soft);
 }
-.pray-list { margin: 10px 0 0; padding-left: 1.15rem; }
-.pray-list li { margin: 5px 0; font-size: 0.92rem; color: var(--text); }
-.pray-list li::marker { color: var(--accent); }
-.pray-empty { margin-top: 10px; font-size: 0.88rem; }
+.sky-steps { margin: 10px 0 0; padding-left: 1.4rem; }
+.sky-step { margin: 10px 0; font-size: 0.94rem; color: var(--text); }
+.sky-step::marker { color: var(--accent); font-weight: 800; }
+.sky-tag {
+  display: inline-block; margin-left: 6px; padding: 1px 8px; vertical-align: 1px;
+  border-radius: 999px; background: var(--chip-bg); color: var(--chip-text);
+  font-size: 0.74rem; font-weight: 700; white-space: nowrap;
+}
+.sky-photo {
+  display: block; width: 132px; margin-top: 8px; padding: 0;
+  background: none; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  overflow: hidden; cursor: zoom-in;
+}
+.sky-photo:hover { border-color: var(--accent); }
+.sky-photo img { display: block; width: 100%; height: auto; }
+.lightbox.single .lb-nav { display: none; }
 
 /* 📌 고정(핀) 정보 — 메인 맨 위 */
 .pinned { display: grid; gap: 10px; margin-bottom: 22px; }

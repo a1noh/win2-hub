@@ -172,7 +172,7 @@
   // ── 탭 정의 ───────────────────────────────────────────────
   var TABS = [
     { id: "main",    label: "🏠 메인" },
-    { id: "prayer",  label: "🙏 기도" },
+    { id: "skyroom", label: "📘 스카이룸" },
     { id: "archive", label: "🗄️ 보관함" }
   ];
 
@@ -222,28 +222,35 @@
     return wrap;
   }
 
-  // ── 기도 제목 (🙏 기도 탭) ────────────────────────────────
-  function buildPrayer(pr) {
-    var wrap = document.createElement("div");
-    var people = (pr && pr.people) || [];
-    if (!people.length) { wrap.appendChild(el("p", "muted empty", "기도 제목이 없습니다.")); return wrap; }
+  // ── 스카이룸 매뉴얼 (📘 스카이룸 탭) ──────────────────────
+  function buildSkyroom(sky) {
     var grid = el("div", "card-grid");
-    people.forEach(function (person) {
-      var card = el("div", "card pray-card");
-      var inner = el("div", "pray-inner");
-      inner.appendChild(el("div", "pray-name", inlineFormat(esc(person.name || "확인 필요"))));
-      if (person.requests && person.requests.length) {
-        var ul = el("ul", "pray-list");
-        person.requests.forEach(function (r) { ul.appendChild(el("li", null, inlineFormat(esc(r)))); });
-        inner.appendChild(ul);
-      } else {
-        inner.appendChild(el("div", "pray-empty muted", "확인 필요"));
-      }
-      card.appendChild(inner);
+    ((sky && sky.sections) || []).forEach(function (section) {
+      var card = el("div", "card sky-card");
+      card.appendChild(el("h3", "sky-title", esc(section.title || "")));
+      var ol = el("ol", "sky-steps");
+      (section.steps || []).forEach(function (step) {
+        var li = el("li", "sky-step", inlineFormat(esc(step.text || "")));
+        if (step.tag) li.appendChild(el("span", "sky-tag", esc(step.tag)));
+        (step.photos || []).forEach(function (p) {
+          var btn = el("button", "sky-photo");
+          btn.type = "button";
+          btn.setAttribute("aria-label", (p.caption || "사진") + " 크게 보기");
+          var img = document.createElement("img");
+          img.loading = "lazy";
+          img.decoding = "async";
+          img.alt = p.caption || "";
+          img.src = p.thumb || p.src;
+          btn.appendChild(img);
+          btn.addEventListener("click", function () { openLightbox([p], 0); });
+          li.appendChild(btn);
+        });
+        ol.appendChild(li);
+      });
+      card.appendChild(ol);
       grid.appendChild(card);
     });
-    wrap.appendChild(grid);
-    return wrap;
+    return grid;
   }
 
   // 🔒 사이트 비밀번호 입력 화면 (전체 사이트 잠금)
@@ -318,13 +325,13 @@
       img.src = p.thumb || p.src;
       btn.appendChild(img);
       if (p.caption) btn.appendChild(el("span", "gcap", esc(p.caption)));
-      btn.addEventListener("click", function () { openLightbox(idx); });
+      btn.addEventListener("click", function () { openLightbox(photos, idx); });
       grid.appendChild(btn);
     });
     panel.appendChild(grid);
   }
 
-  var lb = null, lbIndex = 0;
+  var lb = null, lbIndex = 0, lbPhotos = [];
   function ensureLightbox() {
     if (lb) return lb;
     lb = el("div", "lightbox");
@@ -349,16 +356,17 @@
     return lb;
   }
   function showPhoto(i) {
-    var photos = DATA.photos || [];
-    lbIndex = (i + photos.length) % photos.length;
-    var p = photos[lbIndex];
+    lbIndex = (i + lbPhotos.length) % lbPhotos.length;
+    var p = lbPhotos[lbIndex];
     var img = lb.querySelector(".lb-img");
     img.src = p.src || p.thumb;
     img.alt = p.caption || "";
     lb.querySelector(".lb-cap").textContent = p.caption || "";
   }
-  function openLightbox(i) {
+  function openLightbox(list, i) {
     ensureLightbox();
+    lbPhotos = list;
+    lb.classList.toggle("single", list.length < 2);
     showPhoto(i);
     lb.classList.add("open");
     document.body.classList.add("no-scroll");
@@ -420,16 +428,10 @@
     pMain.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
     pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다."));
 
-    // 🙏 기도 제목
-    var pPr = document.getElementById("panel-prayer");
-    if (pPr) {
-      var nPray = (DATA.prayer && DATA.prayer.people ? DATA.prayer.people.length : 0);
-      pPr.appendChild(el("h2", "panel-h", "🙏 기도 제목 " + '<span class="count">' + nPray + "</span>"));
-      if (DATA.prayer && DATA.prayer.updated) {
-        pPr.appendChild(el("div", "gwanggo-head", '<span class="gwanggo-date">' + esc("기준: " + DATA.prayer.updated) + "</span>"));
-      }
-      pPr.appendChild(buildPrayer(DATA.prayer));
-    }
+    // 📘 스카이룸 매뉴얼
+    var pSky = document.getElementById("panel-skyroom");
+    pSky.appendChild(el("h2", "panel-h", "📘 " + esc((DATA.skyroom && DATA.skyroom.title) || "스카이룸")));
+    pSky.appendChild(buildSkyroom(DATA.skyroom));
 
     // 🗄️ 보관함 (지난 것 전부, 최신순 — 그냥 한 줄 목록)
     var pAr = document.getElementById("panel-archive");

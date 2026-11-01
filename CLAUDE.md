@@ -8,7 +8,11 @@ Live: https://a1noh.github.io/win2-hub/ · Repo: `a1noh/win2-hub` (GitHub Pages,
   `styles.css` / `app.js`는 콘텐츠 업데이트 때 건드리지 않는다.
 - **`data.local.js`는 절대 건드리거나 `git add` 하지 않는다.** 여기엔 민감한 기도
   요청(prayer)이 들어 있고 `.gitignore` 처리돼 있다. 기도 데이터를 `data.js`로
-  옮기지 않는다.
+  옮기지 않는다. (기도 탭은 📘 스카이룸 탭으로 교체돼서 사이트는 이 파일을 더 이상
+  불러오지 않는다.)
+- **`data.js`와 repo는 공개다.** 사이트 비밀번호는 화면만 가릴 뿐 `data.js`는
+  비밀번호 없이 읽을 수 있다. 락박스 코드 같은 비밀 정보는 적지 않는다.
+  `skyroromref/` 원본에 코드가 있으니 커밋하지 않는다.
 
 ## 주간 업데이트 신호 (자동 인식)
 Austin이 **Google Drive 폴더 링크 + 새 일정/카카오톡 메시지**를 붙여넣으면 —
