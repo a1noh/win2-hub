@@ -49,7 +49,7 @@ window.HUB_DATA = {
 
   // ── 스카이룸 매뉴얼 (📘 스카이룸 탭) ──────────────────────
   //   sections = 예배 전/후, steps = 순서대로 번호가 자동으로 붙는 할 일.
-  //   tag: "섬엠" → 작은 칩으로 표시. photos: 탭하면 크게 보이는 사진 (선택).
+  //   tag: "라벨" → 작은 칩으로 표시 (선택). photos: 탭하면 크게 보이는 사진 (선택).
   //   ⚠️ 이 파일과 repo 는 비밀번호 없이도 공개됩니다.
   //      락박스 코드 같은 비밀 정보는 절대 적지 마세요.
   skyroom: {
@@ -60,13 +60,12 @@ window.HUB_DATA = {
         steps: [
           {
             text: "송출 / 음향 셋업 확인",
-            tag: "섬엠",
             photos: [
               { src: "images/skyroom-laptop.jpg", thumb: "images/thumbs/skyroom-laptop.jpg", caption: "송출용 노트북 + HDMI 허브 연결" },
               { src: "images/skyroom-mixer.jpg", thumb: "images/thumbs/skyroom-mixer.jpg", caption: "음향 믹서 — 손가락으로 가리킨 페이더 확인" }
             ]
           },
-          { text: "헌금함팻말 + 헌금봉투케이스와 펜 두기", tag: "섬엠" },
+          { text: "헌금함팻말 + 헌금봉투케이스와 펜 두기" },
           { text: "안내위원 뱃지 목걸이 쓰기" },
           {
             text: "조명 다 끄기 - 사진의 맨마지막 버튼 눌러서 끄기 + 옆 스위치도 모두 끄기",
@@ -94,9 +93,9 @@ window.HUB_DATA = {
             text: "리모컨 프로젝터향해 들고 빨간버튼한번 엔터버튼 한번 눌러서 끄기",
             photos: [{ src: "images/skyroom-remote.jpg", thumb: "images/thumbs/skyroom-remote.jpg", caption: "프로젝터 리모컨" }]
           },
-          { text: "안내위원뱃지 밑 서점박스에 두기", tag: "섬엠" },
-          { text: "송출용 노트북 스카이룸 서랍에 있는 회색 패브릭케이스에 넣어두기 (락박스에 있는 키로 열어야함 — 락박스 비밀번호는 카톡에서 확인)", tag: "섬엠" },
-          { text: "8층 헌금함도 4층창고로 가야함", tag: "섬엠" }
+          { text: "안내위원뱃지 밑 서점박스에 두기" },
+          { text: "송출용 노트북 스카이룸 서랍에 있는 회색 패브릭케이스에 넣어두기 (락박스에 있는 키로 열어야함 — 락박스 비밀번호는 카톡에서 확인)" },
+          { text: "8층 헌금함도 4층창고로 가야함" }
         ]
       }
     ]
