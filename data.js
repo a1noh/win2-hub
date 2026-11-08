@@ -5,7 +5,6 @@
    필요가 없습니다.
 
    - updated : 맨 위에 표시되는 "마지막 업데이트" 날짜 (YYYY-MM-DD)
-   - gwanggo : 이번 주 주일 광고 (common = [공통], win2 = [윈투])
    - items   : 날짜가 있는 모든 공지/일정 (아래 블록을 복사해서 추가)
    - skyroom : 📘 스카이룸 탭 매뉴얼 (예배 전/후 할 일)
 
@@ -40,14 +39,6 @@
 
 window.HUB_DATA = {
   updated: "2026-11-07",
-
-  // ── 이번 주 광고 (주일 광고) ───────────────────────────────
-  //   광고 내용은 아래 photos(슬라이드 사진)로 보여줍니다.
-  //   여기에는 날짜와 (선택) 구글 슬라이드 링크만 둡니다.
-  gwanggo: {
-    date: "2026-10-04",
-    slidesUrl: ""    // 구글 슬라이드 링크가 있으면 여기에 붙여넣기 ("" 면 버튼 숨김)
-  },
 
   // ── 고정(핀) 정보 — 🏠 메인 맨 위에 항상 표시 ─────────────
   //   날짜 없는 상시 정보용 (예: 셀 모임 시간, 자주 쓰는 링크).
@@ -107,27 +98,6 @@ window.HUB_DATA = {
       }
     ]
   },
-
-  // ── 주일 광고 슬라이드 사진 (📋 광고 탭) ──────────────────
-  //   caption = 광고 제목(번호 그대로). src = 큰 이미지, thumb = 작은 미리보기.
-  //   보통은 매주 새 구글 드라이브 폴더 링크를 Claude 에게 주면 자동 갱신됩니다.
-  //   직접 추가하려면: images/ 와 images/thumbs/ 에 파일을 넣고 아래 블록 복사.
-  //   (압축은 tools/compress_images.py — 자세히는 UPDATING.md)
-  photos: [
-    { caption: "0-0. Welcome",      src: "images/welcome.jpg",     thumb: "images/thumbs/welcome.jpg" },
-    { caption: "0-1. 윈투 새가족",    src: "images/saegajok.jpg",    thumb: "images/thumbs/saegajok.jpg" },
-    { caption: "1-1. 큐티책",         src: "images/qt.jpg",          thumb: "images/thumbs/qt.jpg" },
-    { caption: "1-2. 기도 전시회",    src: "images/prayer-expo.jpg", thumb: "images/thumbs/prayer-expo.jpg" },
-    { caption: "1-3. 오버플로우",     src: "images/overflow.jpg",    thumb: "images/thumbs/overflow.jpg" },
-    { caption: "2-0. ON:IT",         src: "images/onit.jpg",        thumb: "images/thumbs/onit.jpg" },
-    { caption: "2-1. 홀스",           src: "images/holls.jpg",       thumb: "images/thumbs/holls.jpg" },
-    { caption: "2-2. 중보기도",       src: "images/jungbo.jpg",      thumb: "images/thumbs/jungbo.jpg" },
-    { caption: "2-3. 어퍼룸",         src: "images/upperroom.jpg",   thumb: "images/thumbs/upperroom.jpg" },
-    { caption: "2-4. 새벽기도팀 모집", src: "images/dawn-prayer.jpg", thumb: "images/thumbs/dawn-prayer.jpg" },
-    { caption: "2-5. 사역모집",       src: "images/ministry.jpg",    thumb: "images/thumbs/ministry.jpg" },
-    { caption: "2-6. 미파 클럽",       src: "images/mipa.jpg",        thumb: "images/thumbs/mipa.jpg" },
-    { caption: "2-7. 순장사관학교",    src: "images/soonjang.jpg",    thumb: "images/thumbs/soonjang.jpg" }
-  ],
 
   // ── 날짜가 있는 공지/일정 ──────────────────────────────────
   items: [

@@ -189,7 +189,6 @@
       return [].map.call(new Uint8Array(buf), function (b) { return b.toString(16).padStart(2, "0"); }).join("");
     });
   }
-  var galleryBuilt = false;
 
   function setActive(tabId, updateHash) {
     if (!TABS.some(function (t) { return t.id === tabId; })) tabId = "main";
@@ -346,19 +345,6 @@
     setTimeout(function () { try { input.focus(); } catch (e3) {} }, 50);
   }
 
-  // ── 주일 광고 헤더 (날짜 + 선택적 슬라이드 링크) ──────────
-  //   광고 내용 자체는 슬라이드 사진 그리드로 보여준다.
-  function buildGwanggoHead(g) {
-    var wrap = el("div", "gwanggo-head");
-    if (g.date) wrap.appendChild(el("div", "gwanggo-date", esc(fmtDate(ymdToMs(g.date)) + " 주일 광고")));
-    if (g.slidesUrl && g.slidesUrl.trim()) {
-      var a = el("a", "slide-link", "📑 구글 슬라이드 전체 보기");
-      a.href = g.slidesUrl; a.target = "_blank"; a.rel = "noopener noreferrer";
-      wrap.appendChild(a);
-    }
-    return wrap;
-  }
-
   // ── 카드 그리드 ───────────────────────────────────────────
   function buildCardGrid(items, emptyMsg) {
     if (!items.length) return el("p", "muted empty", emptyMsg || "항목이 없습니다.");
@@ -367,30 +353,7 @@
     return grid;
   }
 
-  // ── 사진 갤러리 + 라이트박스 ──────────────────────────────
-  function buildGallery() {
-    galleryBuilt = true;
-    var panel = document.getElementById("panel-gwanggo");
-    var photos = DATA.photos || [];
-    if (!photos.length) { panel.appendChild(el("p", "muted empty", "사진이 없습니다.")); return; }
-    var grid = el("div", "gallery");
-    photos.forEach(function (p, idx) {
-      var btn = el("button", "gphoto");
-      btn.type = "button";
-      btn.setAttribute("aria-label", (p.caption || "사진") + " 크게 보기");
-      var img = document.createElement("img");
-      img.loading = "lazy";
-      img.decoding = "async";
-      img.alt = p.caption || "";
-      img.src = p.thumb || p.src;
-      btn.appendChild(img);
-      if (p.caption) btn.appendChild(el("span", "gcap", esc(p.caption)));
-      btn.addEventListener("click", function () { openLightbox(photos, idx); });
-      grid.appendChild(btn);
-    });
-    panel.appendChild(grid);
-  }
-
+  // ── 라이트박스 (스카이룸 사진 크게 보기) ──────────────────
   var lb = null, lbIndex = 0, lbPhotos = [];
   function ensureLightbox() {
     if (lb) return lb;

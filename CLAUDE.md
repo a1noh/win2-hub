@@ -15,24 +15,25 @@ Live: https://a1noh.github.io/win2-hub/ · Repo: `a1noh/win2-hub` (GitHub Pages,
   `skyroromref/` 원본에 코드가 있으니 커밋하지 않는다.
 
 ## 주간 업데이트 신호 (자동 인식)
-Austin이 **Google Drive 폴더 링크 + 새 일정/카카오톡 메시지**를 붙여넣으면 —
+Austin이 **새 일정/카카오톡 메시지(스크린샷 포함)**를 붙여넣으면 —
 `/update`를 직접 치지 않았더라도 — 이번 주 공지 업데이트 요청으로 인식한다.
 "이번 주 업데이트로 보고 플레이북대로 진행할게요"라고 말하고, `/update` 명령과
 동일한 흐름을 따른다. (명령 정의: `.claude/commands/update.md`)
 
 전체 절차는 **`UPDATING.md`**가 유일한 출처다. 핵심:
-1. 슬라이드 다운로드+압축(`tools/compress_images.py`) → `data.js` `photos[]` 재생성
-2. `gwanggo.date` + 최상위 `updated` 날짜 올리기
-3. 새 일정을 `items[]`에 추가
-4. **아카이브 스윕**: `data.js` 전체 재점검 — 지난 항목 보관함 확인, 끝난 무날짜
+1. 최상위 `updated` 날짜 올리기
+2. 새 일정을 `items[]`에 추가
+3. **아카이브 스윕**: `data.js` 전체 재점검 — 지난 항목 보관함 확인, 끝난 무날짜
    항목 `done:true`, 애매하면 삭제 말고 Austin에게 질문
-5. `index.html`의 `?v=N` 캐시 버전 올리기
+4. `index.html`의 `?v=N` 캐시 버전 올리기
 
 ## 푸시 규칙
 업데이트를 반영하면 **OK를 기다리지 말고 바로** `git add . && git commit && git push`
 한다. 푸시 후 **라이브 링크(https://a1noh.github.io/win2-hub/)를 눈에 띄게 띄우고**,
 바뀐 내용을 짧게 요약한다 (배포 1~2분 내 반영). `data.local.js`는 절대 커밋하지 않고,
 커밋에는 바뀐 파일만 담는다(의도치 않은 `AGENTS.md` 등 제외).
+
+※ 주일 광고 슬라이드(📋 광고 탭)는 폐지됨 — Drive 슬라이드는 받지 않는다.
 
 ## 날짜/시간
 날짜 표시는 이미 동적이다 — `app.js`가 매 로드 시 America/New_York 기준 현재 날짜로
