@@ -95,7 +95,7 @@ window.HUB_DATA = {
             photos: [{ src: "images/skyroom-remote.jpg", thumb: "images/thumbs/skyroom-remote.jpg", caption: "프로젝터 리모컨" }]
           },
           { text: "안내위원뱃지 밑 서점박스에 두기", tag: "섬엠" },
-          { text: "송출용 노트북 스카이룸 서랍에 있는 회색 패브릭케이스에 넣어두기 (락박스에 있는 키로 열어야함, 코드는 섬엠에게 문의)", tag: "섬엠" },
+          { text: "송출용 노트북 스카이룸 서랍에 있는 회색 패브릭케이스에 넣어두기 (락박스에 있는 키로 열어야함 — 락박스 비밀번호는 카톡에서 확인)", tag: "섬엠" },
           { text: "8층 헌금함도 4층창고로 가야함", tag: "섬엠" }
         ]
       }
