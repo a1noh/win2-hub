@@ -13,7 +13,7 @@ $ARGUMENTS
 
 실행 순서:
 1. `data.js`의 최상위 `updated`를 이번 주 날짜로 올립니다.
-2. 새 일정을3. 새 일정을 `data.js`의 `items[]`에 추가합니다 (id/category/title/start/end/
+2. 새 일정을 `data.js`의 `items[]`에 추가합니다 (id/category/title/start/end/
    summary/people/done/body).
 3. **아카이브 스윕 규칙**을 실행합니다: `data.js` 전체를 다시 훑어 `end`가 지난
    항목이 보관함으로 내려갔는지 확인(잘못/누락된 날짜 수정), 날짜 없이 명백히

@@ -61,7 +61,10 @@ window.HUB_DATA = {
           {
             text: "송출 / 음향 셋업 확인",
             tag: "섬엠",
-            photos: [{ src: "images/skyroom-laptop.jpg", thumb: "images/thumbs/skyroom-laptop.jpg", caption: "송출용 노트북 + HDMI 허브 연결" }]
+            photos: [
+              { src: "images/skyroom-laptop.jpg", thumb: "images/thumbs/skyroom-laptop.jpg", caption: "송출용 노트북 + HDMI 허브 연결" },
+              { src: "images/skyroom-mixer.jpg", thumb: "images/thumbs/skyroom-mixer.jpg", caption: "음향 믹서 — 손가락으로 가리킨 페이더 확인" }
+            ]
           },
           { text: "헌금함팻말 + 헌금봉투케이스와 펜 두기", tag: "섬엠" },
           { text: "안내위원 뱃지 목걸이 쓰기" },
