@@ -67,12 +67,19 @@ window.HUB_DATA = {
       {
         title: "예배 전",
         steps: [
-          { text: "송출 / 음향 셋업 확인", tag: "섬엠" },
+          {
+            text: "송출 / 음향 셋업 확인",
+            tag: "섬엠",
+            photos: [{ src: "images/skyroom-laptop.jpg", thumb: "images/thumbs/skyroom-laptop.jpg", caption: "송출용 노트북 + HDMI 허브 연결" }]
+          },
           { text: "헌금함팻말 + 헌금봉투케이스와 펜 두기", tag: "섬엠" },
           { text: "안내위원 뱃지 목걸이 쓰기" },
           {
             text: "조명 다 끄기 - 사진의 맨마지막 버튼 눌러서 끄기 + 옆 스위치도 모두 끄기",
-            photos: [{ src: "images/skyroom-lights.jpg", thumb: "images/thumbs/skyroom-lights.jpg", caption: "조명 패널" }]
+            photos: [
+              { src: "images/skyroom-lights.jpg", thumb: "images/thumbs/skyroom-lights.jpg", caption: "조명 패널" },
+              { src: "images/skyroom-switches.jpg", thumb: "images/thumbs/skyroom-switches.jpg", caption: "옆 스위치 (Kitchen Edge / 1 / 2) 모두 끄기" }
+            ]
           },
           {
             text: "블라인드 내리기 (화면 안보일때) - 맨 밑 버튼 누르면 내려가고 맨 위에 버튼 누르면 멈춤",
