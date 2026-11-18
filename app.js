@@ -111,8 +111,8 @@
   }
 
   // ── 카드 ──────────────────────────────────────────────────
-  //   expanded=true  → 🏠 메인: 본문이 바로 펼쳐진 "한 블록" (요약줄 없음)
-  //   expanded=false → 🗄️ 보관함: 제목+요약만, 눌러서 펼치기
+  //   expanded=true  → 본문이 바로 펼쳐진 카드 (요약줄 없음, 현재 미사용)
+  //   expanded=false → 제목+요약, 눌러서 펼치기 (메인·보관함 기본)
   function buildCard(item, expanded) {
     var hasBody = item.body && item.body.trim() !== "";
     var hasPeople = item.people && item.people.length;
@@ -454,10 +454,10 @@
     var pinned = buildPinned(DATA.pinned);
     if (pinned) pMain.appendChild(pinned);
     pMain.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
-    pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다.", true));
+    pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다."));
     if (ahead.length) {
       pMain.appendChild(el("h2", "panel-h sub", "📅 미리 알아두기 " + '<span class="count">' + ahead.length + "</span>"));
-      pMain.appendChild(buildCardGrid(ahead, "", true));
+      pMain.appendChild(buildCardGrid(ahead, ""));
     }
 
     // 📘 스카이룸 매뉴얼
