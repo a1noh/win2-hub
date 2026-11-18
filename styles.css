@@ -161,6 +161,7 @@ body.no-scroll { overflow: hidden; }
 }
 .card-body { display: none; padding: 2px 14px 16px; border-top: 1px solid var(--line-soft); }
 .card.open .card-body { display: block; }
+.card.expanded .card-head { cursor: default; }
 
 /* 카테고리 칩 (카드 제목 옆) */
 .cat-chip {

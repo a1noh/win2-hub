@@ -111,10 +111,12 @@
   }
 
   // ── 카드 ──────────────────────────────────────────────────
-  function buildCard(item) {
+  //   expanded=true  → 🏠 메인: 본문이 바로 펼쳐진 "한 블록" (요약줄 없음)
+  //   expanded=false → 🗄️ 보관함: 제목+요약만, 눌러서 펼치기
+  function buildCard(item, expanded) {
     var hasBody = item.body && item.body.trim() !== "";
     var hasPeople = item.people && item.people.length;
-    var card = el("div", "card" + (hasBody ? "" : " no-body"));
+    var card = el("div", "card" + (hasBody ? "" : " no-body") + (expanded && hasBody ? " expanded open" : ""));
     card.id = "card-" + item.id;
 
     var head = el("button", "card-head");
@@ -126,11 +128,11 @@
     var chip = categoryChip(item);
     if (chip) row1.appendChild(chip);
     row1.appendChild(relBadge(item));
-    if (hasBody) row1.appendChild(el("span", "card-chev", "▾"));
+    if (hasBody && !expanded) row1.appendChild(el("span", "card-chev", "▾"));
     head.appendChild(row1);
     head.appendChild(el("div", "card-date", esc(dateRangeText(item))));
 
-    if (item.summary) head.appendChild(el("div", "card-summary", inlineFormat(esc(item.summary))));
+    if (item.summary && !(expanded && hasBody)) head.appendChild(el("div", "card-summary", inlineFormat(esc(item.summary))));
     else if (!hasBody && !hasPeople) head.appendChild(el("div", "card-summary muted", "확인 필요"));
 
     if (hasPeople) {
@@ -144,7 +146,8 @@
       var body = el("div", "card-body");
       body.appendChild(el("div", "md", renderMarkdown(item.body)));
       card.appendChild(body);
-      head.addEventListener("click", function () {
+      if (expanded) head.setAttribute("aria-expanded", "true");
+      else head.addEventListener("click", function () {
         var open = card.classList.toggle("open");
         head.setAttribute("aria-expanded", open ? "true" : "false");
       });
@@ -346,10 +349,10 @@
   }
 
   // ── 카드 그리드 ───────────────────────────────────────────
-  function buildCardGrid(items, emptyMsg) {
+  function buildCardGrid(items, emptyMsg, expanded) {
     if (!items.length) return el("p", "muted empty", emptyMsg || "항목이 없습니다.");
     var grid = el("div", "card-grid");
-    items.forEach(function (it) { grid.appendChild(buildCard(it)); });
+    items.forEach(function (it) { grid.appendChild(buildCard(it, expanded)); });
     return grid;
   }
 
@@ -412,7 +415,9 @@
     var items = (DATA.items || []).slice();
     var live = items.filter(function (it) { return !isPast(it); });
     var past = items.filter(isPast).sort(byEndDesc);
-    var upcoming = live.slice().sort(byStartAsc);
+    // group:"ahead" → 📅 미리 알아두기 (장기 준비·먼 일정), 나머지 → 🗓️ 다가오는 일정
+    var upcoming = live.filter(function (it) { return it.group !== "ahead"; }).sort(byStartAsc);
+    var ahead = live.filter(function (it) { return it.group === "ahead"; }).sort(byStartAsc);
 
     // 상단바: 헤더 + 탭 (탭은 sticky)
     var header = el("header", "site-header");
@@ -449,7 +454,11 @@
     var pinned = buildPinned(DATA.pinned);
     if (pinned) pMain.appendChild(pinned);
     pMain.appendChild(el("h2", "panel-h", "🗓️ 다가오는 일정 " + '<span class="count">' + upcoming.length + "</span>"));
-    pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다."));
+    pMain.appendChild(buildCardGrid(upcoming, "예정된 일정이 없습니다.", true));
+    if (ahead.length) {
+      pMain.appendChild(el("h2", "panel-h sub", "📅 미리 알아두기 " + '<span class="count">' + ahead.length + "</span>"));
+      pMain.appendChild(buildCardGrid(ahead, "", true));
+    }
 
     // 📘 스카이룸 매뉴얼
     var pSky = document.getElementById("panel-skyroom");
