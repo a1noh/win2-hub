@@ -96,7 +96,16 @@ window.HUB_DATA = {
             photos: [{ src: "images/skyroom-remote.jpg", thumb: "images/thumbs/skyroom-remote.jpg", caption: "프로젝터 리모컨" }]
           },
           { text: "안내위원뱃지 밑 서점박스에 두기" },
-          { text: "송출용 노트북 스카이룸 서랍에 있는 회색 패브릭케이스에 넣어두기 (락박스에 있는 키로 열어야함 — 락박스 비밀번호는 카톡에서 확인)" },
+          {
+            text: "송출용 노트북 회색 패브릭케이스에 넣어서 스카이룸 서랍(IN2 FIAF SKYROOM 라벨)에 넣기",
+            photos: [{ src: "images/skyroom-drawer.jpg", thumb: "images/thumbs/skyroom-drawer.jpg", caption: "스카이룸 서랍 — 회색 케이스에 노트북" }]
+          },
+          {
+            text: "서랍 위·아래 칸 둘 다 잠그기 — 키는 음향부스 왼쪽 락박스 안 테이프 붙인 키 (락박스 비밀번호는 카톡에서 확인). 잠근 뒤 키는 락박스에 다시 넣기",
+            tag: "꼭!",
+            photos: [{ src: "images/skyroom-lockbox.jpg", thumb: "images/thumbs/skyroom-lockbox.jpg", caption: "음향부스 왼쪽 락박스 (Master Lock)" }]
+          },
+          { text: "음향부스 전원 끄기 — 방법은 전도사님이 알려주실 예정 (확정되면 업데이트)" },
           { text: "8층 헌금함도 4층창고로 가야함" }
         ]
       }
